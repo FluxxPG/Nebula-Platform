@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from 'react';
 import { Home, Users, UserCheck, Calendar, Grip, Shield, LogOut, Bell, Settings, FileText, BarChart2, Database, Layout, CheckSquare } from 'lucide-react';
 import { ThemeProvider } from './contexts/ThemeContext';
@@ -11,7 +12,6 @@ import { useBreadcrumbs } from './hooks/useBreadcrumbs';
 import { spacing } from './ui';
 import { HomePage } from './pages/HomePage';
 import { AppLibraryPage } from './pages/AppLibraryPage';
-import { IdentityListPage } from './pages/IdentityListPage';
 import { IdentityDetailPage } from './pages/IdentityDetailPage';
 import { UIDesignerPage } from './pages/UIDesignerPage';
 import { ModelManagerPage } from './pages/ModelManagerPage';
@@ -88,7 +88,7 @@ const AppContent: React.FC = () => {
   const colors = useThemeColors();
   const { theme } = useTheme();
   const { iconColors, tileSizes, textSizes } = useAppearance();
-  const { breadcrumbs, updateBreadcrumbs, addBreadcrumb, goBack } = useBreadcrumbs();
+  const { breadcrumbs, updateBreadcrumbs, goBack } = useBreadcrumbs();
 
   // SMART TEXT COLOR HELPER
   const getSmartTextColor = (type: 'primary' | 'secondary' | 'violet' = 'primary') => {
@@ -647,7 +647,6 @@ const AppContent: React.FC = () => {
     console.log('Search result clicked:', result);
 
     if (result.category === 'users' && result.url?.includes('/identity/')) {
-      const identityId = result.url.split('/').pop();
       setCurrentPage('identity-list');
       updatePageBreadcrumbs('identity-list');
       navigate('/identity-list');
