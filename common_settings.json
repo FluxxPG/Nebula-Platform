@@ -1,0 +1,7 @@
+{
+  "API_URL": "https://localhost/api",
+  "SELF_API_URL": "/api",
+  "DEPLOYMENT_ONPRIM": false
+}
+
+
