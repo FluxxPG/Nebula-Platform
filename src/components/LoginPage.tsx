@@ -1,10 +1,46 @@
-import React, { useState } from 'react';
-import { Eye, EyeOff, Mail, Lock, User, AlertCircle, CheckCircle, Sparkles, Zap, Star } from 'lucide-react';
+import React, { useState, CSSProperties } from 'react';
+import { Eye, EyeOff, Lock, User, AlertCircle, CheckCircle, Sparkles, Zap, Star } from 'lucide-react';
 import { useThemeColors } from '../ui/hooks/useThemeColors';
 import { useTheme } from '../contexts/ThemeContext';
 import { spacing, borderRadius, shadows, animations } from '../ui';
-import { GlassButton, GlassStatusBadge } from '../ui/components';
+import { GlassButton } from '../ui/components';
 import { useTranslation } from 'react-i18next';
+
+import styles from './Badge.module.css';
+
+// Reusable Badge Component with optimized styles
+const Badge = ({ id, label, color }: { id: string; label: string; color: string }) => {
+  const gradient = {
+    'emerald': 'linear-gradient(135deg, #047857 0%, #065f46 100%)',
+    'indigo': 'linear-gradient(135deg, #4A2D85 0%, #6A4098 100%)',
+    'amber': 'linear-gradient(135deg, #b45309 0%, #92400e 100%)'
+  };
+
+  const glow = {
+    'emerald': 'rgba(4, 120, 87, 0.15)',
+    'indigo': 'rgba(74, 45, 133, 0.15)',
+    'amber': 'rgba(180, 83, 9, 0.15)'
+  };
+
+  // Inline styles for dynamic values
+  const baseStyle: CSSProperties = {
+    '--badge-glow': glow[color as keyof typeof glow],
+    '--gradient': gradient[color as keyof typeof gradient],
+    background: gradient[color as keyof typeof gradient],
+    boxShadow: '0 4px 16px rgba(0, 0, 0, 0.12), 0 0 30px var(--badge-glow), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+  } as CSSProperties;
+
+  return (
+    <span 
+      id={id}
+      className={styles.glassStatusBadge}
+      style={baseStyle}
+    >
+      <span className={styles.badgeDot} />
+      <span className={styles.badgeText}>{label}</span>
+    </span>
+  );
+};
 
 interface LoginPageProps {
   onLogin: (credentials: { email: string; password: string }) => void;
@@ -77,9 +113,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
     justifyContent: 'center',
     padding: spacing['3xl'],
     position: 'relative',
-    background: theme === 'light'
-      ? 'linear-gradient(135deg, #4A2D85 0%, #6A4098 100%)'
-      : 'linear-gradient(135deg, #4A2D85 0%, #6A4098 100%)',
+    background: 'linear-gradient(135deg, #4A2D85 0%, #6A4098 100%)',
+    overflow: 'hidden',
   };
 
   // RIGHT SIDE - LOGIN FORM - NOW THEME-AWARE
@@ -231,13 +266,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
     textAlign: 'right',
   };
 
-  const demoCredentialsStyles: React.CSSProperties = {
-    marginTop: spacing.xl,
-    padding: spacing.lg,
-    background: colors.glass.secondary, // THEME-AWARE BACKGROUND
-    borderRadius: borderRadius.lg,
-    border: `1px solid ${colors.border.light}`, // THEME-AWARE BORDER
-  };
 
   // Consistent input styles for both email and password
   const inputBaseStyles: React.CSSProperties = {
@@ -263,31 +291,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
     paddingRight: '3.5rem',
   };
 
-  // New style for badges container
-  const badgesContainerStyles: React.CSSProperties = {
-    display: 'flex',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    gap: spacing.md,
-    marginTop: spacing.xl,
-  };
-
-  // Xecutables container styles
-  const xecutablesContainerStyles: React.CSSProperties = {
-    marginTop: spacing.xl,
-    padding: spacing.xl,
-    background: 'rgba(255, 255, 255, 0.15)',
-    borderRadius: borderRadius.lg,
-    backdropFilter: 'blur(10px)',
-    WebkitBackdropFilter: 'blur(10px)',
-    border: '2px solid rgba(255, 255, 255, 0.3)',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: spacing.md,
-  };
-
-  // Modified validation for username instead of email
   const validateUsername = (username: string): string | undefined => {
     if (!username) return t('common.required');
     return undefined;
@@ -305,7 +308,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
 
   const validateForm = (): boolean => {
     const newErrors: ValidationErrors = {};
-
+    
     const usernameError = validateUsername(formData.email);
     const passwordError = validatePassword(formData.password);
 
@@ -345,17 +348,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
     e.preventDefault();
     setIsSubmitted(true);
 
-    // Skip full validation for username, just check if it's empty
-    const newErrors: ValidationErrors = {};
-    if (!formData.email) {
-      newErrors.email = t('common.required');
-    }
-    if (!formData.password) {
-      newErrors.password = t('common.required');
-    }
-
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
+    // Validate form
+    if (!validateForm()) {
       return;
     }
 
@@ -372,7 +366,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
       } else {
         setErrors({ general: 'Invalid username or password. Please try again.' });
       }
-    } catch (error) {
+    } catch {
       setErrors({ general: 'An error occurred. Please try again later.' });
     } finally {
       setIsLoading(false);
@@ -573,6 +567,59 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
       </style>
 
       <div id="NEB33" style={containerStyles} className="login-container">
+        {/* Xecutables - Top Left */}
+        <div style={{
+          position: 'absolute',
+          top: '2rem',
+          left: '2rem',
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: '0.75rem',
+          zIndex: 20,
+          background: 'rgba(255, 255, 255, 0.1)',
+          padding: '0.5rem 1.25rem',
+          borderRadius: '50px',
+          backdropFilter: 'blur(10px)',
+          border: '1px solid rgba(255, 255, 255, 0.2)',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
+        }}>
+          <img
+            id="NEB54"
+            src="/Xecutables.png"
+            alt="Xecutables Private Limited"
+            style={{
+              height: '50px',
+              objectFit: 'contain',
+              filter: 'brightness(0) invert(1) drop-shadow(0 1px 2px rgba(0,0,0,0.2))',
+              transition: 'all 0.2s ease',
+              transformOrigin: 'center'
+            }}
+            onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+            onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+          />
+          <div style={{
+            height: '40px',
+            width: '1px',
+            background: 'rgba(255, 255, 255, 0.3)',
+            margin: '0 0.5rem'
+          }} />
+          <p 
+            id="NEB53" 
+            style={{
+              fontSize: '1rem',
+              color: 'rgba(255, 255, 255, 0.95)',
+              margin: 0,
+              fontWeight: 500,
+              whiteSpace: 'nowrap',
+              textShadow: '0 1px 2px rgba(0,0,0,0.2)',
+              letterSpacing: '0.02em'
+            }}
+          >
+            {t('common.poweredBy')}
+          </p>
+        </div>
+
         {/* LEFT SIDE - STUNNING NEBULA DESIGN - NOW THEME-AWARE */}
         <div id="NEB34" style={leftSideStyles} className="login-left">
           {/* Background SVG from login-template.svg */}
@@ -582,7 +629,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
             left: 0,
             width: '100%',
             height: '100%',
-            zIndex: 0,
+            overflow: 'hidden',
+            zIndex: 1,
           }}>
             <img
               id="NEB36"
@@ -665,90 +713,135 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
           </div>
 
           {/* Central Nebula Logo */}
-          <div id="NEB43" style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            textAlign: 'center',
-            zIndex: 10,
-          }}>
-            <div id="NEB44" style={{
-              width: '160px',
-              height: '160px',
-              background: 'transparent',
-              borderRadius: '40px',
+          <div 
+            id="NEB43" 
+            className="nebula-header" 
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              textAlign: 'center',
+              zIndex: 10,
+              position: 'relative',
+              height: '100%',
+              width: '100%',
+              padding: '2rem 0',
+              margin: 'auto'
+            }}
+          >
+            {/* Logo and Title Container */}
+            <div style={{
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              marginBottom: spacing['2xl'],
-              border: `3px solid rgba(255, 255, 255, 0.3)`,
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)',
-              boxShadow: '0 20px 60px rgba(74, 45, 133, 0.6)',
-              overflow: 'hidden',
-            }} className="nebula-glow">
-              <img
-                id="NEB45"
-                src="/Nebula_Logo_H6.svg"
-                alt="Nebula Logo"
+              gap: '1rem',
+              flexWrap: 'nowrap',
+              transform: 'translateY(-10%)' /* Fine-tune vertical position */
+            }}>
+              {/* Logo Container */}
+              <div 
+                className="nebula-logo-container"
                 style={{
+                  width: '90px',
+                  height: '90px',
+                  background: 'transparent',
+                  borderRadius: '22px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  border: '2px solid rgba(255, 255, 255, 0.3)',
+                  backdropFilter: 'blur(20px)',
+                  boxShadow: '0 15px 45px rgba(74, 45, 133, 0.5)',
+                  overflow: 'visible', /* Changed to visible to allow logo to extend */
+                  transition: 'all 0.3s ease',
+                  flexShrink: 0,
+                  transform: 'scale(0.9)'
+                }}
+              >
+                <div style={{
                   width: '100%',
                   height: '100%',
-                  objectFit: 'contain',
-                  filter: 'brightness(0) invert(1)'
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transform: 'scale(1.45)' /* Further increased scale for larger logo */
+                }}>
+                  <img
+                    id="NEB45"
+                    src="/Nebula_Logo_H6.svg"
+                    alt="Nebula Logo"
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'contain',
+                      filter: 'brightness(0) invert(1)',
+                      transition: 'all 0.3s ease',
+                    }}
+                    onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.15)'}
+                    onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                  />
+                </div>
+              </div>
+
+              {/* Title */}
+              <h1 
+                id="NEB46" 
+                className="nebula-title"
+                style={{
+                  fontSize: '4rem',
+                  fontWeight: 900,
+                  color: 'rgba(255, 255, 255, 0.95)',
+                  margin: 0,
+                  letterSpacing: '-0.02em',
+                  textShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                  whiteSpace: 'nowrap',
                 }}
-              />
+              >
+                Nebula
+              </h1>
             </div>
 
-            <h1 id="NEB46" style={{
-              fontSize: '4rem',
-              fontWeight: '900',
-              color: 'rgba(255, 255, 255, 0.95)',
-              marginBottom: spacing.lg,
-              letterSpacing: '-0.02em',
-            }}>
-              Nebula
-            </h1>
-
-            <p id="NEB47" style={{
-              fontSize: '1.5rem',
-              color: 'rgba(255, 255, 255, 0.8)',
-              fontWeight: '500',
-              lineHeight: '1.4',
-              maxWidth: '400px',
-            }}>
-              Advanced Identity & Access Management Platform
+            {/* Subtitle */}
+            <p 
+              id="NEB47" 
+              className="nebula-subtitle" 
+              style={{
+                fontSize: '1.1rem',
+                color: 'rgba(255, 255, 255, 0.8)',
+                fontWeight: 500,
+                lineHeight: 1.2,
+                margin: '0',
+                whiteSpace: 'nowrap',
+                textAlign: 'center',
+                letterSpacing: '0.02em',
+                width: '100%',
+                padding: '0 1rem',
+                textShadow: '0 1px 2px rgba(0,0,0,0.2)'
+              }}
+            >
+              Advanced Identity &amp; Access Management Platform
             </p>
 
-            {/* Status Badges - ALIGNED IN A SINGLE ROW */}
-            <div id="NEB48" style={badgesContainerStyles} className="badges-container">
-              <GlassStatusBadge id="NEB49" status="success" label="Enterprise Ready" size="lg" />
-              <GlassStatusBadge id="NEB50" status="info" label="Cloud Native" size="lg" />
-              <GlassStatusBadge id="NEB51" status="warning" label="AI Powered" size="lg" />
+            {/* Status Badges */}
+            <div 
+              id="NEB48" 
+              className="badges-container"
+              style={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                justifyContent: 'center',
+                gap: '0.75rem',
+                margin: '1.5rem 0',
+              }}
+            >
+              <Badge id="NEB49" label="Enterprise Ready" color="emerald" />
+              <Badge id="NEB50" label="Cloud Native" color="indigo" />
+              <Badge id="NEB51" label="AI Powered" color="amber" />
             </div>
 
-            {/* Xecutables Logo - ENHANCED CONTAINER */}
-            <div id="NEB52" style={xecutablesContainerStyles}>
-              <p id="NEB53" style={{
-                fontSize: '1rem',
-                color: 'rgba(255, 255, 255, 0.8)',
-                margin: 0,
-                textAlign: 'center',
-                fontWeight: '600',
-              }}>
-                {t('common.poweredBy')}
-              </p>
-              <img
-                id="NEB54"
-                src="/Xecutables.png"
-                alt="Xecutables Private Limited"
-                style={{
-                  height: '90px', // INCREASED from 40px to 80px
-                  objectFit: 'contain',
-                  width: "50%"
-                }}
-              />
-            </div>
+            {/* Spacer to maintain layout */}
+            <div style={{ height: '1.5rem' }}></div>
           </div>
         </div>
 
@@ -834,6 +927,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                     style={passwordInputStyles}
                     className="login-input"
                     disabled={isLoading}
+                    autoComplete="current-password"
                   />
                   <button
                     id="NEB74"
